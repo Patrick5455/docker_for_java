@@ -138,4 +138,106 @@ out: Hello World!
 Tags are used for versioning pur docker images. So for example, we can werite our program to print rather "Howdy World !" and rebuild the image but this time using a tag of 4 i.e helloworld:4 and run a container from this new image
 
 
+DOckerizing java-Maven APp
+
+observe below
+
+<profiles>
+        <profile>
+            <id>docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.20.1</version>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>hellojava</name>
+                                    <build>
+                                        <from>openjdk:latest</from>
+                                        <assembly>
+                                            <descriptorRef>artifact</descriptorRef>
+                                        </assembly>
+                                        <cmd>java -jar maven/${project.name}-${project.version}.jar</cmd>
+                                    </build>
+                                    <run>
+                                        <wait>
+                                            <log>Hello World!</log>
+                                        </wait>
+                                    </run>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>docker:build</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>docker:start</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                    <goal>logs</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>dcos</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>dcos</groupId>
+                        <artifactId>dcos-maven-plugin</artifactId>
+                        <version>0.2</version>
+                        <configuration>
+                            <dcosUrl>http://DCOS-ElasticLoadBa-OG73USRXKTX-912507967.us-west-1.elb.amazonaws.com/</dcosUrl>
+                            <deployable>group</deployable>
+                            <ignoreSslCertificate>true</ignoreSslCertificate>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>dcos:deploy</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>deploy</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin> 
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    
+    
+We can tag a particular image to the latest tag. By default, docker uses the latest tag when availabel and when we do not specify the tag version.
+
+docker image tag helloworld:2 helloworld:latest
+
+What we did here is that we took an existing image called helloworld:2 and tag it to a new image with the same name but with latest tag.
+So essentially, we are making this docker image version (tag) as the latest tag
+
+Pushing our image to docker hub
+
+running docker image push helloworld:latest will throw up errors. This is becuase you cannot push a docker image without a namespace, here our url namespace is out docker username
+
+SO to correct that, we do something like
+
+> docker tag helloworld:3 patrick5455/helloworld:latest
+
+> docker login
+
+> docker psuh patrick5455/helloworld:latest
+
+With the above 3 steps, we are able to push our latest image succesfully to our public docker registry
 
