@@ -16,9 +16,14 @@ To build a docker image, we use a dockerfile which contains some steps (started 
 1. First, you create a diorectory where the image would be built
 2. THen you create a file named 'Dockerfile'. This file contains the steps/instructions you want docker to use in buidling your image.
 > Steps/instructions in Dockerfile include
->. FROM - this is always the first step. It tells docker which base image to pull form. Typically we pull from an existing image to creat our own image
->. CMD - docker containers run only one thing which they run really well. This is what we specofy in the CMD step. We specify what we want this image container(s) torun
 
+# FROM - this is always the first step. It tells docker which base image to pull form. Typically we pull from an existing image to creat our own image
+
+# CMD - docker containers run only one thing which they run really well. This is what we specofy in the CMD step. We specify what we want this image container(s) torun
+
+# COPY - docker copies new files or directoires from the host to the continaer filesystem
+
+# ADD - does what COPY does but in addition does file auto-extraciton in the image
 
 3. After creating the Dockerfile, we build the image with the following command
 
@@ -55,3 +60,18 @@ IN: docker run --name <container_name> <image_name>
 When building an image, there are several oither tags we can add to the build command, e.g;
 
 > --compress : to compress files from the build context/directory and send to the host in a gzip format
+
+
+The alpine tag helps us to pull images version with lower size. alpine tags are smaller in size than toher tags expecoally latest tags
+
+
+To add a java project (jar/war) to our images, we can use the COPY in our dockerfile.
+So we will specify the name of the file to be copied inside the directory we are creating the image and the specify the location in the image(base image) we want it to be located
+
+e.g 
+
+FROM jboss/wildfly
+
+COPY webapp.war /opt/jboss/wildfly/standlaone/deployments/webapp.war
+
+Note that, there is no CMD in the Dockerfile above. This is becuase in cases of multiple dockerfiles intheriting from each other, only one CMD will everb effective. The child Dockerfile CMD overrides the parent CMD. Also if we have multiple CMD in one DOckerfile, only the last CMD will be effective
