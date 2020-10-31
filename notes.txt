@@ -19,11 +19,53 @@ To build a docker image, we use a dockerfile which contains some steps (started 
 
 # FROM - this is always the first step. It tells docker which base image to pull form. Typically we pull from an existing image to creat our own image
 
-# CMD - docker containers run only one thing which they run really well. This is what we specofy in the CMD step. We specify what we want this image container(s) torun
+# CMD - docker containers run only one thing which they run really well. This is what we specofy in the CMD step. We specify what we want this image container(s) to run
+example of CMD command:
+
+CMD java -jar jarfile
+CMD echo "hello world"
+
+# RUN - CMD is often confused with RUN most times. RUN is used to install software packages not commands that we want docker to run on our container. Run can also be used to execute bash script
+example of RUN command:
+
+RUN sudo apt-get update && apt-get install -y git
+RUN /opt/jboss/wildfly/bin/add-user.sh admin Admin#007 - silent
 
 # COPY - docker copies new files or directoires from the host to the continaer filesystem
 
 # ADD - does what COPY does but in addition does file auto-extraciton in the image
+
+#ENTRYPOINT - configures the container executable; can be overriden using --entrypoint from CLI
+Each docker contianer when they start, use an entrypoint. The default entrypoint is:
+/bin/sh -c
+This can be overriden with the ENTRYPOINT command, you give it a script to run e.g
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+# EXPOSE network ports on which the container is listening. Let's say you are building an application. And you are publishing an API on a certain port, you need to expose the port.
+THis makes the container functionality be accessible via this port
+
+E.g 
+EXPOSE 9090
+
+EXPOSE only exposes the port from the container. But at runtime, you still need to specify either -P or -p localhostport:continerport to publish the host port
+
+# VOLUME: creates a mount point with the specified name/directory
+e.g 
+VOLUME /opt/couchbase/var
+
+The VOULUME command lets us know which path in the image to mount data/volumes from the host to. This is what we use when we do
+docker run --name my_container -v `pwd`/files_to_mount/:/opt/couchabse/var
+
+# USER: sets the username or UID  to use when running the image
+
+# HEALTHCHECK: performs a healthceck on the application inside the container
+This is very important comand because a container returning "up for 1 hours" may be having erros. This is because the container maybe up but the application within it may be malfunctioning
+e.g 
+
+HEALTHCHECK --interval=5s --timeout=3s CMD curl --fail http://localhost:8091/pools || exit 1
+
+The above command tells docker to perform an healthcheck every 5 seconds (--interval=5s) and timeout in 3 seconds. This means if in 3 seconds, if it does not return a result, mark the container as unhealthy. So what command does it needs to run if the container is unhealthy, we say ping the provided url (rest api), ping that api and make sure the databse pools are available and if it fails, exit with status code of 1
 
 3. After creating the Dockerfile, we build the image with the following command
 
@@ -75,3 +117,25 @@ FROM jboss/wildfly
 COPY webapp.war /opt/jboss/wildfly/standlaone/deployments/webapp.war
 
 Note that, there is no CMD in the Dockerfile above. This is becuase in cases of multiple dockerfiles intheriting from each other, only one CMD will everb effective. The child Dockerfile CMD overrides the parent CMD. Also if we have multiple CMD in one DOckerfile, only the last CMD will be effective
+
+FROM openjdk:jdk-alpine
+
+CMD java -version
+
+COPY myapp/target/myapp-1.0-SNAPSHOT.jar /deployments/
+
+CMD java -jar /deployments/myapp-1.0-SNAPSHOT.jar
+
+after building an image from the Dockerfile above and run a contiainer from it, we would get an oputput of "helloworld!". THis means the docker ran the jar file which we specified in the CMD command
+
+
+IN: sudo docker build -t hellojava:3 .
+
+IN: sudo docker run --name hellojava_3 hellojava:3
+
+out: Hello World!
+
+Tags are used for versioning pur docker images. So for example, we can werite our program to print rather "Howdy World !" and rebuild the image but this time using a tag of 4 i.e helloworld:4 and run a container from this new image
+
+
+
