@@ -1,0 +1,20 @@
+command to deploy a volume from localhost to contianer path:
+
+IN: sudo docker run -d --name webapp -p 8080:8080 -v `pwd`/webapp.war:/opt/jboss/wildfly/standalone/deployments/webapp.war/ jboss/wildfly
+out: 6b9d35e1ea275605c248cb61237513271f04c064a423d164969badd6e23a1cf1
+
+Confirm the artifact has been deployed to the container in the specified port. So we run/visit the url in the browser
+
+IN: curl http://localhost:8080/webapp/resources/persons
+
+OUT:
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?><collection><person><name>Penny</name></person><person><name>Leonard</name></person><person><name>Sheldon</name></person><person><name>Amy</name></person><person><name>Howard</name></person><person><name>Bernadette</name></person><person><name>Raj</name></person><person><name>Priya</name></person></collection>patrick@patrick:~/Documents/dev/personal/learning_path/devops/gupta_docker/docker-for-java-master/chap
+
+Building a DOcker image
+To build a docker image, we use a dockerfile which contains some steps (started by FROM) to create our image
+
+> First, you create a diorectory where the image would be built
+> THen you create a file named 'Dockerfile'. This file contains the steps/instructions you want docker to use in buidling your image.
+> Steps/instructions in Dockerfile include
+1. FROM - this is always the first step. It tells docker which base image to pull form. Typically we pull from an existing image to creat our own image
+2. CMD - docker containers run only one thing which they run really well. This is what we specofy in the CMD step. We specify what we want this image container(s) torun
